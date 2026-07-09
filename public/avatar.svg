@@ -1,0 +1,9 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="360" fill="#16110A"/>
+  <circle cx="360" cy="360" r="330" stroke="#C9963B" stroke-opacity="0.32" stroke-width="3"/>
+  <circle cx="360" cy="322" r="126" fill="#251E14" stroke="#C9963B" stroke-opacity="0.36" stroke-width="3"/>
+  <path d="M160 618C189 500 267 450 360 450C453 450 531 500 560 618" fill="#251E14"/>
+  <path d="M160 618C189 500 267 450 360 450C453 450 531 500 560 618" stroke="#C9963B" stroke-opacity="0.36" stroke-width="3"/>
+  <path d="M246 327C282 268 324 239 373 239C417 239 452 261 478 304" stroke="#E8B84B" stroke-opacity="0.5" stroke-width="9" stroke-linecap="round"/>
+  <text x="360" y="638" text-anchor="middle" fill="#9A8A72" font-size="24" font-family="JetBrains Mono, monospace" letter-spacing="4">ADD HEADSHOT</text>
+</svg>

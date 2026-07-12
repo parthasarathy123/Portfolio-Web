@@ -25,6 +25,11 @@ function doPost(event) {
     MailApp.sendEmail({
       to: notificationEmail,
       subject: "New portfolio contact: " + (payload.name || "Website visitor"),
+      body:
+        "Name: " + (payload.name || "") + "\n" +
+        "Company: " + (payload.company || "") + "\n" +
+        "Email: " + (payload.email || "") + "\n\n" +
+        "Message:\n" + (payload.message || ""),
       htmlBody:
         "<p><strong>Name:</strong> " + escapeHtml(payload.name) + "</p>" +
         "<p><strong>Company:</strong> " + escapeHtml(payload.company) + "</p>" +

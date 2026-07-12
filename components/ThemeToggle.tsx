@@ -27,15 +27,17 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-      className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-[13px] py-1.5 font-mono text-[11px] font-semibold leading-none tracking-[0.04em] transition"
+      aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+      aria-pressed={theme === "light"}
+      className="theme-toggle"
       style={{
         background: "var(--surface-2)",
         borderColor: "var(--gold-border)",
         color: "var(--gold)",
       }}
     >
-      <span>{theme === "light" ? "moon" : "sun"}</span>
-      <span className="hidden sm:inline">{theme === "light" ? "dark" : "light"}</span>
+      <span aria-hidden="true">{theme === "light" ? "moon" : "sun"}</span>
+      <span className="theme-toggle-label">{theme === "light" ? "dark" : "light"}</span>
     </button>
   );
 }

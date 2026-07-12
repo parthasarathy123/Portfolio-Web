@@ -1,0 +1,19 @@
+.git/
+.next/
+.vercel/
+node_modules/
+.env*
+
+# Local logs and generated review artifacts
+.next-dev.*.log
+output/
+preview-screenshots/
+tmp/
+tsconfig.tsbuildinfo
+
+# Local security audit artifacts
+ai-agent-introspection-audit*
+
+# Setup references that are not required by the deployed app
+CONTACT_SETUP.md
+google-apps-script/

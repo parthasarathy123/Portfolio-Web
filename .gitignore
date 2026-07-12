@@ -21,6 +21,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.next-dev.*.log
+.next-prod.*.log
+tsconfig.tsbuildinfo
+
+# generated local review and audit artifacts
+output/
+preview-screenshots/
+tmp/
+ai-agent-introspection-audit*
 
 # OS/editor
 .DS_Store

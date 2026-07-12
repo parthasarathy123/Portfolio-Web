@@ -12,96 +12,61 @@ export type TagCardItem = {
 };
 
 export function Pill({ children }: { children: React.ReactNode }) {
+  return <span className="pill">{children}</span>;
+}
+
+export function MetricGrid({ stats }: { stats: ReadonlyArray<{ value: string; label: string }> }) {
   return (
-    <span
-      className="rounded-full border px-2.5 py-[3px] font-mono text-[10px]"
-      style={{
-        color: "var(--text-muted)",
-        background: "var(--surface)",
-        borderColor: "var(--border)",
-      }}
-    >
-      {children}
-    </span>
+    <dl className="metrics-grid" aria-label="Career highlights">
+      {stats.map((stat) => (
+        <div key={stat.label} className="metric-item">
+          <dd>{stat.value}</dd>
+          <dt>{stat.label}</dt>
+        </div>
+      ))}
+    </dl>
   );
 }
 
-export function ProjectCard({ item }: { item: TagCardItem }) {
+export function ProjectCard({ item, headingLevel = 3 }: { item: TagCardItem; headingLevel?: 3 | 4 }) {
+  const Heading = headingLevel === 4 ? "h4" : "h3";
   const body = (
-    <div
-      className="h-full rounded-2xl border p-7 transition hover:border-[var(--gold-border)]"
-      style={{ background: "var(--surface-2)", borderColor: "var(--border)" }}
-    >
-      <div className="mb-3 flex items-start justify-between gap-4">
-        <div className="font-display text-lg font-bold tracking-[-0.02em]" style={{ color: "var(--text)" }}>
-          {item.title}
-        </div>
-        {item.status ? (
-          <span className="shrink-0 rounded-full border px-2.5 py-[3px] font-mono text-[9px]" style={{ color: "var(--gold)", background: "var(--gold-bg)", borderColor: "var(--gold-border)" }}>
-            {item.status}
-          </span>
-        ) : null}
+    <article className={`project-card${item.href ? " project-card-interactive" : ""}`}>
+      <div className="project-card-heading">
+        <Heading>{item.title}</Heading>
+        {item.status ? <span className="project-status">{item.status}</span> : null}
       </div>
-      {item.metric ? (
-        <div className="mb-2 font-mono text-[11px] tracking-[0.05em]" style={{ color: "var(--gold)" }}>
-          {item.metric}
+      {item.metric ? <p className="project-metric">{item.metric}</p> : null}
+      <p className="project-description">{item.description}</p>
+      {item.tags?.length ? (
+        <div className="tag-list" aria-label="Tools and methods">
+          {item.tags.map((tag) => <Pill key={tag}>{tag}</Pill>)}
         </div>
       ) : null}
-      <p className="mb-4 font-sans text-[13px] leading-[1.75]" style={{ color: "var(--text-muted)" }}>
-        {item.description}
-      </p>
-      <div className="mb-5 flex flex-wrap gap-1.5">
-        {item.tags?.map((tag) => (
-          <Pill key={tag}>{tag}</Pill>
-        ))}
-      </div>
-      {item.cta ? (
-        <div className="font-mono text-[11px]" style={{ color: "var(--gold)" }}>
-          {item.cta}
-        </div>
-      ) : null}
-    </div>
+      {item.cta ? <span className="project-cta">{item.cta}</span> : null}
+    </article>
   );
 
-  if (item.href) {
-    const external = item.href.startsWith("http");
-    return (
-      <a href={item.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="block h-full">
-        {body}
-      </a>
-    );
-  }
+  if (!item.href) return body;
 
-  return body;
+  const external = item.href.startsWith("http");
+  return (
+    <a href={item.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="project-card-link">
+      {body}
+    </a>
+  );
 }
 
 export function StoryCard({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
-    <div
-      className="rounded-[14px] border px-6 py-[26px]"
-      style={{ background: "var(--surface-2)", borderColor: "var(--border)" }}
-    >
-      <div className="mb-3.5 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--text-dim)" }}>
-        {eyebrow}
-      </div>
-      <div className="mb-2.5 font-display text-[15px] font-semibold leading-[1.4] tracking-[-0.01em]" style={{ color: "var(--text)" }}>
-        {title}
-      </div>
-      <div className="font-mono text-xs leading-[1.7]" style={{ color: "var(--text-muted)" }}>
-        {description}
-      </div>
-    </div>
+    <article className="story-card">
+      <p className="story-eyebrow">{eyebrow}</p>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </article>
   );
 }
 
 export function SectionLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-lg border px-7 py-[13px] font-mono text-xs tracking-[0.03em]"
-      style={{ color: "var(--text-muted)", borderColor: "var(--border-2)" }}
-    >
-      {children}
-    </Link>
-  );
+  return <Link href={href} className="button-secondary">{children}</Link>;
 }

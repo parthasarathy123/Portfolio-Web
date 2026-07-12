@@ -1,20 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Pill, ProjectCard, SectionLink, StoryCard } from "@/components/Cards";
+import { ContactForm } from "@/components/ContactForm";
+import { MetricGrid, Pill, ProjectCard, SectionLink, StoryCard } from "@/components/Cards";
 import { site } from "@/content/site";
 
 export default function HomePage() {
   const home = site.home;
+  const work = site.build;
+  const techStack = site.techStack;
 
   return (
     <>
-      <section className="relative overflow-hidden py-20 pb-24">
-        <div className="hero-glow-a" />
-        <div className="hero-glow-b" />
+      <section id="home" className="hero-section relative py-20 pb-24">
         <div className="relative z-10">
-          <div className="mb-16 grid items-center gap-[60px] min-[769px]:grid-cols-[1fr_360px]">
-            <div>
-              <div className="mb-7">
+          <div className="hero-layout mb-16 grid items-center gap-[60px] min-[769px]:grid-cols-[1fr_360px]">
+            <div className="hero-copy">
+              <div className="hero-intro mb-7">
                 <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.12em]" style={{ color: "var(--text-dim)" }}>
                   <span style={{ color: "var(--gold)" }}>// </span>
                   {home.introLabel}
@@ -27,10 +28,10 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <h1 className="mb-1.5 font-display text-[clamp(42px,5.5vw,80px)] font-bold leading-[1.02] tracking-[-0.038em]">
-                {home.headline.map((word) => (
+              <h1 className="hero-headline mb-1.5 font-display font-bold leading-[1.02]">
+                {home.headline.map((word, index) => (
                   <span key={word} className="mr-[0.26em] inline-block" style={{ color: "var(--text)" }}>
-                    {word}
+                    {word}{index < home.headline.length - 1 ? " " : ""}
                   </span>
                 ))}
                 <br />
@@ -41,23 +42,21 @@ export default function HomePage() {
                 {home.subhead}
               </p>
 
-              <div className="flex flex-wrap items-center gap-2.5">
-                <a
-                  href={home.primaryCta.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-lg px-7 py-[13px] font-mono text-xs font-bold tracking-[0.03em] shadow-[0_4px_24px_rgba(201,150,59,0.25)]"
-                  style={{ background: "var(--gold)", color: "var(--bg)" }}
-                >
-                  {home.primaryCta.label} -&gt;
-                </a>
+              <div className="hero-actions">
+                <Link href={home.primaryCta.href} className="button-primary">
+                  {home.primaryCta.label} <span aria-hidden="true">-&gt;</span>
+                </Link>
                 {home.secondaryCtas.map((cta, index) =>
-                  index < 2 ? (
+                  index === 0 ? (
                     <SectionLink key={cta.label} href={cta.href}>
                       {cta.label}
                     </SectionLink>
+                  ) : cta.external ? (
+                    <a key={cta.label} href={cta.href} target="_blank" rel="noopener noreferrer" className="hero-tertiary-link">
+                      {cta.label} <span className="sr-only">(opens in a new tab)</span>
+                    </a>
                   ) : (
-                    <Link key={cta.label} href={cta.href} className="font-mono text-xs tracking-[0.03em]" style={{ color: "var(--text-dim)" }}>
+                    <Link key={cta.label} href={cta.href} className="hero-tertiary-link">
                       {cta.label}
                     </Link>
                   ),
@@ -65,33 +64,21 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center max-[768px]:order-first">
-              <div className="relative">
-                <div className="absolute inset-[-24px] rounded-full bg-[radial-gradient(circle,rgba(201,150,59,0.2)_0%,rgba(201,150,59,0.06)_50%,transparent_70%)]" />
-                <div className="absolute inset-[-6px] z-[1] rounded-full border" style={{ borderColor: "var(--gold-border)" }} />
-                <div className="relative z-[2] h-[360px] w-[360px] overflow-hidden rounded-full shadow-[0_8px_60px_rgba(201,150,59,0.2),0_0_0_3px_rgba(201,150,59,0.25)] max-[768px]:h-[220px] max-[768px]:w-[220px]">
-                  <Image src={site.identity.headshot} alt={site.identity.name} width={360} height={360} className="h-full w-full object-cover" priority />
+            <div className="hero-photo-wrap flex items-center justify-center max-[768px]:justify-start">
+              <div className="hero-portrait">
+                <div className="hero-portrait-inner">
+                  <Image src={site.identity.headshot} alt={`Portrait of ${site.identity.name}`} width={360} height={360} sizes="(max-width: 640px) 96px, (max-width: 900px) 260px, 360px" className="h-full w-full object-cover" priority />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="grid-4col">
-            {home.stats.map((stat) => (
-              <div key={stat.label} className="px-[26px] py-[22px]" style={{ background: "var(--surface)" }}>
-                <div className="font-display text-[32px] font-bold leading-none tracking-[-0.02em]" style={{ color: "var(--text)" }}>
-                  {stat.value}
-                </div>
-                <div className="mt-1.5 font-mono text-[10px] tracking-[0.05em]" style={{ color: "var(--text-muted)" }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
+          <MetricGrid stats={home.stats} />
         </div>
       </section>
 
       <section id="story" className="pb-16">
+        <h2 className="sr-only">Career overview</h2>
         <div className="grid-3col">
           {home.story.map((item) => (
             <StoryCard key={item.eyebrow} {...item} />
@@ -113,10 +100,72 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-        <div className="grid-2col gap-3">
+        <div className="systems-grid">
           {home.capabilities.map((item) => (
-            <ProjectCard key={item.title} item={item} />
+            <ProjectCard key={item.title} item={item} headingLevel={3} />
           ))}
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="work" className="py-20">
+        <div className="section-label">{work.label}</div>
+        <h2 className="mb-5 max-w-[780px] font-display text-[clamp(34px,5vw,56px)] font-bold leading-[1.08] tracking-[-0.035em]" style={{ color: "var(--text)" }}>
+          {work.headline}
+          <br />
+          <span style={{ color: "var(--gold)" }}>{work.highlighted}</span>
+        </h2>
+        <p className="mb-12 max-w-[560px] font-sans text-base leading-[1.8]" style={{ color: "var(--text-muted)" }}>
+          {work.intro}
+        </p>
+
+        {work.sections.map((section, index) => (
+          <div key={section.label} className={index === 0 ? "mb-16" : ""}>
+            <div className="work-subsection-heading mb-7 flex flex-wrap items-end justify-between gap-5">
+              <div>
+                <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: "var(--text-dim)" }}>
+                  {String(index + 1).padStart(2, "0")} / {section.label}
+                </div>
+                <h3 className="font-display text-[clamp(24px,3vw,36px)] font-bold tracking-[-0.025em]" style={{ color: "var(--text)" }}>
+                  {section.headline.replace(section.highlighted, "")}
+                  <span style={{ color: "var(--gold)" }}>{section.highlighted}</span>
+                </h3>
+              </div>
+            </div>
+            <div className="grid-3col">
+              {section.items.map((item) => (
+                <ProjectCard key={item.title} item={item} headingLevel={4} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="divider" />
+
+      <section id="tech-stack" className="py-20">
+        <div className="section-label">{techStack.label}</div>
+        <div className="mb-10">
+          <div className="tech-heading-row">
+            <h2 className="mb-5 font-display text-[clamp(32px,4.5vw,52px)] font-bold leading-[1.08] tracking-[-0.032em]" style={{ color: "var(--text)" }}>
+              {techStack.headline}
+              {" "}<span style={{ color: "var(--gold)" }}>{techStack.highlighted}</span>
+            </h2>
+            <p className="font-sans text-[15px] leading-[1.85]" style={{ color: "var(--text-muted)" }}>
+              {techStack.intro}
+            </p>
+          </div>
+          <div className="tools-cluster">
+            {techStack.tools.map((tool) => (
+              <div key={tool.name} className="tool-item">
+                <span className="tool-logo-frame" aria-hidden="true">
+                  {tool.logo ? <Image src={tool.logo} alt="" width={48} height={48} sizes="48px" className="tool-logo" unoptimized /> : <span className="tool-mark">{tool.mark}</span>}
+                </span>
+                <span>{tool.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -139,42 +188,24 @@ export default function HomePage() {
                 href={item.href}
                 target={item.external ? "_blank" : undefined}
                 rel={item.external ? "noopener noreferrer" : undefined}
-                className="mb-2 flex items-center gap-3.5 rounded-lg border px-4 py-3 text-[13px]"
+                className="contact-link"
+                aria-label={`${item.label}: ${item.value}${item.external ? ", opens in a new tab" : ""}`}
                 style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text)" }}
               >
-                <span className="w-7 text-center font-mono text-[10px]" style={{ color: "var(--gold)" }}>
+                <span className="contact-icon" style={{ color: "var(--gold)" }} aria-hidden="true">
                   {item.short}
                 </span>
                 <span>
                   <span className="block font-mono text-[10px]" style={{ color: "var(--text-dim)" }}>
                     {item.label}
                   </span>
-                  <span className="font-sans text-[13px]">{item.href.replace("mailto:", "")}</span>
+                  <span className="font-sans text-[13px]">{item.value}</span>
                 </span>
+                <span className="contact-arrow" aria-hidden="true">-&gt;</span>
               </a>
             ))}
           </div>
-          <form className="flex flex-col gap-3">
-            <label className="font-mono text-[10px] tracking-[0.1em]" style={{ color: "var(--text-dim)" }}>
-              NAME
-              <input type="text" name="name" placeholder="Your name" />
-            </label>
-            <label className="font-mono text-[10px] tracking-[0.1em]" style={{ color: "var(--text-dim)" }}>
-              COMPANY
-              <input type="text" name="company" placeholder="Your company" />
-            </label>
-            <label className="font-mono text-[10px] tracking-[0.1em]" style={{ color: "var(--text-dim)" }}>
-              EMAIL
-              <input type="email" name="email" placeholder="your@company.com" />
-            </label>
-            <label className="font-mono text-[10px] tracking-[0.1em]" style={{ color: "var(--text-dim)" }}>
-              WHAT DO YOU NEED?
-              <textarea name="message" placeholder="Tell me about your GTM challenge..." className="min-h-[110px]" />
-            </label>
-            <button type="button" className="rounded-lg px-6 py-3 text-left font-mono text-xs font-semibold" style={{ background: "var(--gold)", color: "var(--bg)" }}>
-              Send message
-            </button>
-          </form>
+          <ContactForm />
         </div>
       </section>
     </>

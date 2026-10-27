@@ -38,3 +38,7 @@ Thumbs.db
 
 .vercel
 .env*
+
+# report preview
+scripts/*.html
+digest-preview.html

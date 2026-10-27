@@ -30,6 +30,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
+        {/* Umami Cloud Analytics */}
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="d9697f6d-48d7-47bf-a25b-aceb5f4751eb"
+        />
       </head>
       <body className="min-h-screen">
         <SiteShell>{children}</SiteShell>

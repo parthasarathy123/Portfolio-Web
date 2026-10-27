@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { site } from "@/content/site";
 import { SiteShell } from "@/components/SiteShell";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: site.meta.title,
@@ -31,6 +33,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen">
         <SiteShell>{children}</SiteShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

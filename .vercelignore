@@ -14,6 +14,10 @@ tsconfig.tsbuildinfo
 # Local security audit artifacts
 ai-agent-introspection-audit*
 
+# Scripts & workflows not needed by Next.js production build
+scripts/
+.github/
+
 # Setup references that are not required by the deployed app
 CONTACT_SETUP.md
 google-apps-script/

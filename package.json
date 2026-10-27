@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "report": "tsx scripts/analytics-report.ts",
-    "report:dry-run": "tsx scripts/analytics-report.ts --dry-run"
+    "report": "npx --yes tsx scripts/analytics-report.ts",
+    "report:dry-run": "npx --yes tsx scripts/analytics-report.ts --dry-run"
   },
   "dependencies": {
     "@vercel/analytics": "^1.4.1",
@@ -26,7 +26,6 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.3",
     "typescript": "^5.7.3"
   }
 }

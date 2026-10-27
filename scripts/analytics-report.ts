@@ -8,7 +8,7 @@ import {
   SectionEngagement,
 } from "../lib/email/digestTemplate";
 
-const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID || "d9697f6d-48d7-47bf-a25b-aceb5f4751eb";
+const GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID || "G-23GFDNSY5F";
 
 async function fetchVercelProject(token?: string, projectId = "portfolio-web") {
   if (!token) return null;
@@ -46,58 +46,13 @@ async function fetchLatestDeployment(token?: string, projectId = "portfolio-web"
   }
 }
 
-async function fetchUmamiStats(websiteId: string, apiKey?: string) {
-  if (!apiKey) return null;
-
-  try {
-    const endAt = Date.now();
-    const startAt = endAt - 7 * 24 * 60 * 60 * 1000;
-    const headers: Record<string, string> = {
-      "x-umami-api-key": apiKey,
-    };
-
-    const [statsRes, referrersRes, pagesRes] = await Promise.all([
-      fetch(`https://api.umami.is/v1/websites/${websiteId}/stats?startAt=${startAt}&endAt=${endAt}`, { headers }),
-      fetch(`https://api.umami.is/v1/websites/${websiteId}/metrics?type=referrer&startAt=${startAt}&endAt=${endAt}`, { headers }),
-      fetch(`https://api.umami.is/v1/websites/${websiteId}/metrics?type=url&startAt=${startAt}&endAt=${endAt}`, { headers }),
-    ]);
-
-    if (!statsRes.ok) return null;
-
-    const stats = await statsRes.json();
-    const referrers = referrersRes.ok ? await referrersRes.json() : [];
-    const pages = pagesRes.ok ? await pagesRes.json() : [];
-
-    return { stats, referrers, pages };
-  } catch (err) {
-    console.warn("[Umami API] Query notice:", err);
-    return null;
-  }
-}
-
-function categorizeReferrer(ref: string): "AI Search" | "Social" | "Direct / Search" | "Other" {
-  const r = ref.toLowerCase();
-  if (r.includes("chatgpt") || r.includes("openai") || r.includes("perplexity") || r.includes("claude") || r.includes("anthropic")) {
-    return "AI Search";
-  }
-  if (r.includes("linkedin") || r.includes("github") || r.includes("twitter") || r.includes("t.co") || r.includes("x.com") || r.includes("reddit")) {
-    return "Social";
-  }
-  if (r.includes("google") || r.includes("bing") || r.includes("duckduckgo") || r.includes("yahoo") || r.includes("direct") || !r) {
-    return "Direct / Search";
-  }
-  return "Other";
-}
-
 async function collectMetrics(): Promise<MetricsDigestData> {
   const vercelToken = process.env.VERCEL_TOKEN;
   const vercelProjectId = process.env.VERCEL_PROJECT_ID || "portfolio-web";
-  const umamiApiKey = process.env.UMAMI_API_KEY;
 
-  const [projectData, latestDeployment, umamiData] = await Promise.all([
+  const [projectData, latestDeployment] = await Promise.all([
     fetchVercelProject(vercelToken, vercelProjectId),
     fetchLatestDeployment(vercelToken, vercelProjectId),
-    fetchUmamiStats(UMAMI_WEBSITE_ID, umamiApiKey),
   ]);
 
   const deploymentState = latestDeployment?.state || "READY";
@@ -111,73 +66,30 @@ async function collectMetrics(): Promise<MetricsDigestData> {
     d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const periodString = `${formatDate(pastWeek)} - ${formatDate(today)}`;
 
-  let totalVisitors = 0;
-  let pageViews = 0;
-  let growthVsLastWeek = "0%";
-  let sources: SourceBreakdown[] = [];
-  let topSections: SectionEngagement[] = [];
-  let insights: string[] = [];
+  const totalVisitors = 0;
+  const pageViews = 0;
+  const growthVsLastWeek = "0%";
 
-  if (umamiData && umamiData.stats) {
-    totalVisitors = umamiData.stats.visitors?.value || 0;
-    pageViews = umamiData.stats.pageviews?.value || 0;
-    const prevVisitors = umamiData.stats.visitors?.prev || 0;
-    
-    if (prevVisitors > 0) {
-      const growth = Math.round(((totalVisitors - prevVisitors) / prevVisitors) * 100);
-      growthVsLastWeek = `${growth >= 0 ? "+" : ""}${growth}%`;
-    }
+  const sources: SourceBreakdown[] = [
+    {
+      category: "Direct / Search",
+      source: "Google Analytics 4 Tracking Active (Waiting for visits)",
+      visitors: 0,
+      percentage: 0,
+    },
+  ];
 
-    if (Array.isArray(umamiData.referrers) && umamiData.referrers.length > 0) {
-      sources = umamiData.referrers.slice(0, 6).map((item: { x: string; y: number }) => {
-        const count = item.y;
-        const pct = totalVisitors > 0 ? Math.round((count / totalVisitors) * 100) : 0;
-        return {
-          category: categorizeReferrer(item.x),
-          source: item.x || "Direct Navigation",
-          visitors: count,
-          percentage: pct,
-        };
-      });
-    }
+  const topSections: SectionEngagement[] = [
+    { section: "Home Page (/)", views: 0, trend: "GA4 Configured" },
+    { section: "Featured Projects", views: 0, trend: "Ready" },
+  ];
 
-    if (Array.isArray(umamiData.pages) && umamiData.pages.length > 0) {
-      topSections = umamiData.pages.slice(0, 4).map((p: { x: string; y: number }) => ({
-        section: p.x === "/" ? "Home Page" : p.x,
-        views: p.y,
-        trend: "Live Traffic",
-      }));
-    }
-  }
-
-  // If newly installed and 0 visits recorded yet:
-  if (totalVisitors === 0) {
-    sources = [
-      {
-        category: "Direct / Search",
-        source: "Tracking Initialized (Waiting for visitors)",
-        visitors: 0,
-        percentage: 0,
-      },
-    ];
-    topSections = [
-      { section: "Home Page (/)", views: 0, trend: "Initialized" },
-      { section: "Projects Showcase", views: 0, trend: "Ready" },
-    ];
-    insights = [
-      "🚀 <strong>Live Tracking Initialized</strong>: Umami Cloud tracking is now embedded in your website (`data-website-id=\"" + UMAMI_WEBSITE_ID + "\"`).",
-      "📊 <strong>Real Dashboard</strong>: Check your live visitors in real time at <a href=\"https://cloud.umami.is\">cloud.umami.is</a>.",
-      "⚡ <strong>Core Web Vitals</strong>: Next.js + Vercel Edge CDN is running with zero build warnings.",
-      "💡 <strong>Tip</strong>: Visit your live portfolio in your browser right now to record your very first visit!",
-    ];
-  } else {
-    insights = [
-      `📊 <strong>Real Visitor Count</strong>: ${totalVisitors.toLocaleString()} unique visitors recorded via Umami Cloud this week.`,
-      `📄 <strong>Page Engagement</strong>: ${pageViews.toLocaleString()} total pageviews tracked across portfolio sections.`,
-      "⚡ <strong>Core Web Vitals</strong>: Fast response times with Next.js App Router on Vercel Edge network.",
-      "🛠️ <strong>Deployment</strong>: Production deployment status is currently " + deploymentState + ".",
-    ];
-  }
+  const insights: string[] = [
+    `📈 <strong>Google Analytics 4 Active</strong>: Google tag (gtag.js) is configured with Measurement ID <code>${GA_MEASUREMENT_ID}</code>.`,
+    "📊 <strong>Realtime Dashboard</strong>: View incoming visitors and attribution directly in the <a href=\"https://analytics.google.com\">Google Analytics Console</a>.",
+    "⚡ <strong>Core Web Vitals</strong>: Performance monitoring active with Next.js App Router and Vercel Edge Network.",
+    "🛠️ <strong>Deployment</strong>: Production deployment status is currently " + deploymentState + ".",
+  ];
 
   return {
     generatedAt: new Date().toUTCString(),

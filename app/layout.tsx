@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { site } from "@/content/site";
 import { SiteShell } from "@/components/SiteShell";
@@ -30,12 +31,19 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
-        {/* Umami Cloud Analytics */}
-        <script
-          defer
-          src="https://cloud.umami.is/script.js"
-          data-website-id="d9697f6d-48d7-47bf-a25b-aceb5f4751eb"
+        {/* Google Analytics 4 (GA4) */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-23GFDNSY5F"
         />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-23GFDNSY5F');
+          `}
+        </Script>
       </head>
       <body className="min-h-screen">
         <SiteShell>{children}</SiteShell>

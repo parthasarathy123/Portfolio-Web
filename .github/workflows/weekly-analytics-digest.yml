@@ -36,8 +36,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: 'portfolio-web'
-          UMAMI_WEBSITE_ID: 'd9697f6d-48d7-47bf-a25b-aceb5f4751eb'
-          UMAMI_API_KEY: ${{ secrets.UMAMI_API_KEY }}
+          GA_MEASUREMENT_ID: 'G-23GFDNSY5F'
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
           REPORT_RECIPIENT_EMAIL: ${{ secrets.REPORT_RECIPIENT_EMAIL }}

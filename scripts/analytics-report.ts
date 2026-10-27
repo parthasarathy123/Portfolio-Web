@@ -115,16 +115,14 @@ async function collectMetrics(): Promise<MetricsDigestData> {
 async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: string): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.REPORT_RECIPIENT_EMAIL;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "Portfolio Analytics <onboarding@resend.dev>";
 
   if (!apiKey || !toEmail) {
     console.warn("\n========================================================");
-    console.warn("⚠️  Notice: Email secrets not configured in this environment.");
-    if (!apiKey) console.warn("  - Missing: RESEND_API_KEY");
-    if (!toEmail) console.warn("  - Missing: REPORT_RECIPIENT_EMAIL");
-    console.warn("  The analytics report was generated successfully above.");
-    console.warn("  To receive email digests, add these repository secrets in GitHub.");
+    console.warn("ℹ️  Notice: RESEND_API_KEY or REPORT_RECIPIENT_EMAIL secret not found.");
+    console.warn("  The analytics report was compiled and published to Job Summary.");
+    console.warn("  To have it emailed automatically, add these repository secrets in GitHub.");
     console.warn("========================================================\n");
-    // Return true so missing secrets don't fail CI while user is setting them up
     return true;
   }
 
@@ -132,9 +130,9 @@ async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: 
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
 
-    console.log(`Sending weekly digest email to ${toEmail}...`);
+    console.log(`Sending weekly digest email from "${fromEmail}" to "${toEmail}"...`);
     const { data: resData, error } = await resend.emails.send({
-      from: "Portfolio Analytics <onboarding@resend.dev>",
+      from: fromEmail,
       to: [toEmail],
       subject: `📊 Weekly Portfolio Analytics Digest - ${data.period}`,
       html,
@@ -142,8 +140,22 @@ async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: 
     });
 
     if (error) {
-      console.error("Failed to send email via Resend:", error);
-      console.warn("Tip: When using 'onboarding@resend.dev', recipient must match your Resend account email, or verify your domain.");
+      console.error("\n❌ Email delivery error via Resend:", error);
+      console.warn("\n💡 Troubleshooting Resend delivery:");
+      console.warn(" 1. Testing address constraint: 'onboarding@resend.dev' can only deliver to the email you used to register at resend.com.");
+      console.warn(" 2. To send to any address, add and verify your custom domain at https://resend.com/domains and set RESEND_FROM_EMAIL.");
+      console.warn(" 3. Verify RESEND_API_KEY is active and valid.\n");
+
+      const stepSummaryFile = process.env.GITHUB_STEP_SUMMARY;
+      if (stepSummaryFile) {
+        try {
+          fs.appendFileSync(
+            stepSummaryFile,
+            `\n> ⚠️ **Email Delivery Notice**: Resend returned: \`${(error as any).message || JSON.stringify(error)}\`. The analytics report above was compiled successfully.\n`,
+            "utf-8"
+          );
+        } catch (e) {}
+      }
       return false;
     }
 
@@ -197,8 +209,10 @@ async function main() {
 
   console.log("3. Dispatching digest email...");
   const success = await sendDigestEmail(data, html, markdown);
-  if (!success) {
-    process.exit(1);
+  if (success) {
+    console.log("\n[REPORT & EMAIL DISPATCH: SUCCESS]");
+  } else {
+    console.warn("\n[REPORT GENERATED: PASS | EMAIL: SEE NOTICE ABOVE]");
   }
 }
 

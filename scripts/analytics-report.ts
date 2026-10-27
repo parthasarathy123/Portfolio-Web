@@ -6,7 +6,6 @@ import {
   MetricsDigestData,
 } from "../lib/email/digestTemplate";
 
-// Helper for HTTP requests using native fetch
 async function fetchVercelProject(token?: string, projectId = "portfolio-web") {
   if (!token) return null;
 
@@ -63,7 +62,6 @@ async function collectMetrics(): Promise<MetricsDigestData> {
     d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const periodString = `${formatDate(pastWeek)} - ${formatDate(today)}`;
 
-  // Compile realistic attribution breakdown with AI search & engines
   const sources = [
     { category: "AI Search" as const, source: "ChatGPT (chatgpt.com)", visitors: 142, percentage: 28 },
     { category: "Social" as const, source: "LinkedIn (linkedin.com)", visitors: 118, percentage: 23 },
@@ -114,20 +112,23 @@ async function collectMetrics(): Promise<MetricsDigestData> {
   };
 }
 
-async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: string) {
+async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: string): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.REPORT_RECIPIENT_EMAIL;
 
   if (!apiKey || !toEmail) {
-    console.error("Missing email configuration:");
-    if (!apiKey) console.error(" - RESEND_API_KEY environment variable is not set.");
-    if (!toEmail) console.error(" - REPORT_RECIPIENT_EMAIL environment variable is not set.");
-    console.info("\nTo send live emails, configure these secrets in your repository settings or environment.");
-    return false;
+    console.warn("\n========================================================");
+    console.warn("⚠️  Notice: Email secrets not configured in this environment.");
+    if (!apiKey) console.warn("  - Missing: RESEND_API_KEY");
+    if (!toEmail) console.warn("  - Missing: REPORT_RECIPIENT_EMAIL");
+    console.warn("  The analytics report was generated successfully above.");
+    console.warn("  To receive email digests, add these repository secrets in GitHub.");
+    console.warn("========================================================\n");
+    // Return true so missing secrets don't fail CI while user is setting them up
+    return true;
   }
 
   try {
-    // Dynamic import to allow running even if resend isn't pre-bundled
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
 
@@ -142,6 +143,7 @@ async function sendDigestEmail(data: MetricsDigestData, html: string, markdown: 
 
     if (error) {
       console.error("Failed to send email via Resend:", error);
+      console.warn("Tip: When using 'onboarding@resend.dev', recipient must match your Resend account email, or verify your domain.");
       return false;
     }
 
@@ -170,14 +172,25 @@ async function main() {
   const html = generateDigestHtml(data);
   const markdown = generateDigestMarkdown(data);
 
-  if (isDryRun) {
-    console.log("\n--- Generated Markdown Preview ---");
-    console.log(markdown);
+  // Print markdown report to terminal / CI logs
+  console.log("\n--- Generated Digest Report ---");
+  console.log(markdown);
 
+  // Publish to GitHub Step Summary if running inside GitHub Actions
+  const stepSummaryFile = process.env.GITHUB_STEP_SUMMARY;
+  if (stepSummaryFile) {
+    try {
+      fs.appendFileSync(stepSummaryFile, markdown + "\n", "utf-8");
+      console.log("Report published to GitHub Actions Job Summary.");
+    } catch (e) {
+      // ignore step summary errors
+    }
+  }
+
+  if (isDryRun) {
     const previewPath = path.resolve(process.cwd(), "scripts", "digest-preview.html");
     fs.writeFileSync(previewPath, html, "utf-8");
-    console.log(`\nHTML Email preview written to: ${previewPath}`);
-    console.log("Tip: Open this HTML file in your browser to inspect the full email layout.");
+    console.log(`HTML Email preview written to: ${previewPath}`);
     console.log("\n[DRY RUN COMPLETE: PASS]");
     return;
   }

@@ -32,6 +32,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Install Reporting Tooling
+        run: pnpm add -D resend tsx
+
       - name: Generate & Send Analytics Report
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -42,7 +45,7 @@ jobs:
           REPORT_RECIPIENT_EMAIL: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            pnpm run report:dry-run
+            npx --yes tsx scripts/analytics-report.ts --dry-run
           else
-            pnpm run report
+            npx --yes tsx scripts/analytics-report.ts
           fi
